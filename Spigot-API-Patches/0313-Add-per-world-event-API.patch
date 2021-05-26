@@ -4,6 +4,34 @@ Date: Wed, 26 May 2021 23:03:32 +0100
 Subject: [PATCH] Add per world event API
 
 
+diff --git a/src/main/java/com/destroystokyo/paper/event/entity/ThrownEggHatchEvent.java b/src/main/java/com/destroystokyo/paper/event/entity/ThrownEggHatchEvent.java
+index 085d77dde83d6ed13eb83f23cf3e51d380187c9c..c96f263d0f9a67ced0dd7239a3d366322d79a673 100644
+--- a/src/main/java/com/destroystokyo/paper/event/entity/ThrownEggHatchEvent.java
++++ b/src/main/java/com/destroystokyo/paper/event/entity/ThrownEggHatchEvent.java
+@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
+  * <p>
+  * This event fires for all thrown eggs that may hatch, players, dispensers, etc.
+  */
+-public class ThrownEggHatchEvent extends Event {
++public class ThrownEggHatchEvent extends Event implements org.bukkit.event.IWorldEvent { // Paper - per world events
+     private static final HandlerList handlers = new HandlerList();
+     private final Egg egg;
+     private boolean hatching;
+@@ -102,6 +102,14 @@ public class ThrownEggHatchEvent extends Event {
+         this.numHatches = numHatches;
+     }
+ 
++    // Paper start
++    @Override
++    @NotNull
++    public org.bukkit.World getWorld() {
++        return egg.getWorld();
++    }
++    // Paper end
++
+     @NotNull
+     @Override
+     public HandlerList getHandlers() {
 diff --git a/src/main/java/org/bukkit/event/IWorldEvent.java b/src/main/java/org/bukkit/event/IWorldEvent.java
 new file mode 100644
 index 0000000000000000000000000000000000000000..4523806468023630f3fc65197e9e149409155752
