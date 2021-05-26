@@ -1,0 +1,459 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Connor Linfoot <connorlinfoot@me.com>
+Date: Wed, 26 May 2021 23:03:32 +0100
+Subject: [PATCH] Add per world event API
+
+
+diff --git a/src/main/java/org/bukkit/event/IWorldEvent.java b/src/main/java/org/bukkit/event/IWorldEvent.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..4523806468023630f3fc65197e9e149409155752
+--- /dev/null
++++ b/src/main/java/org/bukkit/event/IWorldEvent.java
+@@ -0,0 +1,14 @@
++package org.bukkit.event;
++
++import org.bukkit.World;
++import org.jetbrains.annotations.NotNull;
++
++public interface IWorldEvent {
++
++    /**
++     * @return the associated world that the event has been fired in
++     */
++    @NotNull
++    World getWorld();
++
++}
+diff --git a/src/main/java/org/bukkit/event/block/BlockEvent.java b/src/main/java/org/bukkit/event/block/BlockEvent.java
+index 62a4d13453e5430020933471efa938ceb689baaa..c667628f825819d87889a4c1f78d58a0ef5f55ec 100644
+--- a/src/main/java/org/bukkit/event/block/BlockEvent.java
++++ b/src/main/java/org/bukkit/event/block/BlockEvent.java
+@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
+ /**
+  * Represents a block related event.
+  */
+-public abstract class BlockEvent extends Event {
++public abstract class BlockEvent extends Event implements org.bukkit.event.IWorldEvent { // Paper - per world events
+     protected Block block;
+ 
+     public BlockEvent(@NotNull final Block theBlock) {
+@@ -23,4 +23,12 @@ public abstract class BlockEvent extends Event {
+     public final Block getBlock() {
+         return block;
+     }
++
++    // Paper start
++    @Override
++    @NotNull
++    public org.bukkit.World getWorld() {
++        return block.getWorld();
++    }
++    // Paper end
+ }
+diff --git a/src/main/java/org/bukkit/event/enchantment/EnchantItemEvent.java b/src/main/java/org/bukkit/event/enchantment/EnchantItemEvent.java
+index b898fdefc77e961b03977c1dd70fb8b8bf320871..f50376a6e66f973c98d01ad717ce87a6a1baa6bb 100644
+--- a/src/main/java/org/bukkit/event/enchantment/EnchantItemEvent.java
++++ b/src/main/java/org/bukkit/event/enchantment/EnchantItemEvent.java
+@@ -17,7 +17,7 @@ import org.jetbrains.annotations.NotNull;
+  * Called when an ItemStack is successfully enchanted (currently at
+  * enchantment table)
+  */
+-public class EnchantItemEvent extends InventoryEvent implements Cancellable {
++public class EnchantItemEvent extends InventoryEvent implements Cancellable, org.bukkit.event.IWorldEvent { // Paper - per world events
+     private static final HandlerList handlers = new HandlerList();
+     private final Block table;
+     private final ItemStack item;
+@@ -127,6 +127,14 @@ public class EnchantItemEvent extends InventoryEvent implements Cancellable {
+         return handlers;
+     }
+ 
++    // Paper start
++    @Override
++    @NotNull
++    public org.bukkit.World getWorld() {
++        return enchanter.getWorld();
++    }
++    // Paper end
++
+     @NotNull
+     public static HandlerList getHandlerList() {
+         return handlers;
+diff --git a/src/main/java/org/bukkit/event/entity/EntityEvent.java b/src/main/java/org/bukkit/event/entity/EntityEvent.java
+index e3a9e32933fe84644f7458d2e0b8b09d3eacb21c..c8c760212c597395bd5595a4485a908c421e3045 100644
+--- a/src/main/java/org/bukkit/event/entity/EntityEvent.java
++++ b/src/main/java/org/bukkit/event/entity/EntityEvent.java
+@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
+ /**
+  * Represents an Entity-related event
+  */
+-public abstract class EntityEvent extends Event {
++public abstract class EntityEvent extends Event implements org.bukkit.event.IWorldEvent { // Paper - per world events
+     protected Entity entity;
+ 
+     public EntityEvent(@NotNull final Entity what) {
+@@ -34,4 +34,12 @@ public abstract class EntityEvent extends Event {
+     public EntityType getEntityType() {
+         return entity.getType();
+     }
++
++    // Paper start
++    @Override
++    @NotNull
++    public org.bukkit.World getWorld() {
++        return entity.getWorld();
++    }
++    // Paper end
+ }
+diff --git a/src/main/java/org/bukkit/event/hanging/HangingEvent.java b/src/main/java/org/bukkit/event/hanging/HangingEvent.java
+index f01a1a0f043f2ba832ffd1b1de4b6ee48c375135..70758023f210cde2083f7505ff25b3c242089d4b 100644
+--- a/src/main/java/org/bukkit/event/hanging/HangingEvent.java
++++ b/src/main/java/org/bukkit/event/hanging/HangingEvent.java
+@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
+ /**
+  * Represents a hanging entity-related event.
+  */
+-public abstract class HangingEvent extends Event {
++public abstract class HangingEvent extends Event implements org.bukkit.event.IWorldEvent { // Paper - per world events
+     protected Hanging hanging;
+ 
+     protected HangingEvent(@NotNull final Hanging painting) {
+@@ -23,4 +23,12 @@ public abstract class HangingEvent extends Event {
+     public Hanging getEntity() {
+         return hanging;
+     }
++
++    // Paper start
++    @Override
++    @NotNull
++    public org.bukkit.World getWorld() {
++        return hanging.getWorld();
++    }
++    // Paper end
+ }
+diff --git a/src/main/java/org/bukkit/event/inventory/InventoryInteractEvent.java b/src/main/java/org/bukkit/event/inventory/InventoryInteractEvent.java
+index 14f821ca1da3fb9ceb97a4624528371e1b401aea..a9254344863806d0db358c2d5798c33f5d87e467 100644
+--- a/src/main/java/org/bukkit/event/inventory/InventoryInteractEvent.java
++++ b/src/main/java/org/bukkit/event/inventory/InventoryInteractEvent.java
+@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
+  * An abstract base class for events that describe an interaction between a
+  * HumanEntity and the contents of an Inventory.
+  */
+-public abstract class InventoryInteractEvent extends InventoryEvent implements Cancellable {
++public abstract class InventoryInteractEvent extends InventoryEvent implements Cancellable, org.bukkit.event.IWorldEvent { // Paper - per world events
+     private Result result = Result.DEFAULT;
+ 
+     public InventoryInteractEvent(@NotNull InventoryView transaction) {
+@@ -78,4 +78,12 @@ public abstract class InventoryInteractEvent extends InventoryEvent implements C
+         setResult(toCancel ? Result.DENY : Result.ALLOW);
+     }
+ 
++    // Paper start
++    @Override
++    @NotNull
++    public org.bukkit.World getWorld() {
++        return getWhoClicked().getWorld();
++    }
++    // Paper end
++
+ }
+diff --git a/src/main/java/org/bukkit/event/inventory/InventoryOpenEvent.java b/src/main/java/org/bukkit/event/inventory/InventoryOpenEvent.java
+index 9013d043503d175004ad276799e5935b7fa59dc4..2d30c3048ba06d24617505f290f53edea43fa159 100644
+--- a/src/main/java/org/bukkit/event/inventory/InventoryOpenEvent.java
++++ b/src/main/java/org/bukkit/event/inventory/InventoryOpenEvent.java
+@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
+ /**
+  * Represents a player related inventory event
+  */
+-public class InventoryOpenEvent extends InventoryEvent implements Cancellable {
++public class InventoryOpenEvent extends InventoryEvent implements Cancellable, org.bukkit.event.IWorldEvent { // Paper - per world events
+     private static final HandlerList handlers = new HandlerList();
+     private boolean cancelled;
+ 
+@@ -62,6 +62,14 @@ public class InventoryOpenEvent extends InventoryEvent implements Cancellable {
+         return handlers;
+     }
+ 
++    // Paper start
++    @Override
++    @NotNull
++    public org.bukkit.World getWorld() {
++        return getPlayer().getWorld();
++    }
++    // Paper end
++
+     @NotNull
+     public static HandlerList getHandlerList() {
+         return handlers;
+diff --git a/src/main/java/org/bukkit/event/player/PlayerEvent.java b/src/main/java/org/bukkit/event/player/PlayerEvent.java
+index f6d3b817de3001f04ea4554c7c39a1290af3fd6d..8b2362c95e93414c5996dd0ea43131aedb18997f 100644
+--- a/src/main/java/org/bukkit/event/player/PlayerEvent.java
++++ b/src/main/java/org/bukkit/event/player/PlayerEvent.java
+@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
+ /**
+  * Represents a player related event
+  */
+-public abstract class PlayerEvent extends Event {
++public abstract class PlayerEvent extends Event implements org.bukkit.event.IWorldEvent { // Paper - per world events
+     protected Player player;
+ 
+     public PlayerEvent(@NotNull final Player who) {
+@@ -29,4 +29,12 @@ public abstract class PlayerEvent extends Event {
+     public final Player getPlayer() {
+         return player;
+     }
++
++    // Paper start
++    @Override
++    @NotNull
++    public org.bukkit.World getWorld() {
++        return player.getWorld();
++    }
++    // Paper end
+ }
+diff --git a/src/main/java/org/bukkit/event/vehicle/VehicleEvent.java b/src/main/java/org/bukkit/event/vehicle/VehicleEvent.java
+index 63df270565ed717574d6baa7839d43350944b281..0fb9d24ff6c9709c5663c256a29f9f9a368ad6bb 100644
+--- a/src/main/java/org/bukkit/event/vehicle/VehicleEvent.java
++++ b/src/main/java/org/bukkit/event/vehicle/VehicleEvent.java
+@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
+ /**
+  * Represents a vehicle-related event.
+  */
+-public abstract class VehicleEvent extends Event {
++public abstract class VehicleEvent extends Event implements org.bukkit.event.IWorldEvent { // Paper - per world events
+     protected Vehicle vehicle;
+ 
+     public VehicleEvent(@NotNull final Vehicle vehicle) {
+@@ -23,4 +23,12 @@ public abstract class VehicleEvent extends Event {
+     public final Vehicle getVehicle() {
+         return vehicle;
+     }
++
++    // Paper start
++    @Override
++    @NotNull
++    public org.bukkit.World getWorld() {
++        return vehicle.getWorld();
++    }
++    // Paper end
+ }
+diff --git a/src/main/java/org/bukkit/event/weather/WeatherEvent.java b/src/main/java/org/bukkit/event/weather/WeatherEvent.java
+index e1854d80736494ef51e47c9470a73ef38894b6b1..f9ca4f935d9cdf863bc5be9ad4586700e7e010b9 100644
+--- a/src/main/java/org/bukkit/event/weather/WeatherEvent.java
++++ b/src/main/java/org/bukkit/event/weather/WeatherEvent.java
+@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
+ /**
+  * Represents a Weather-related event
+  */
+-public abstract class WeatherEvent extends Event {
++public abstract class WeatherEvent extends Event implements org.bukkit.event.IWorldEvent { // Paper - per world events
+     protected World world;
+ 
+     public WeatherEvent(@NotNull final World where) {
+diff --git a/src/main/java/org/bukkit/event/world/WorldEvent.java b/src/main/java/org/bukkit/event/world/WorldEvent.java
+index cffeff33f007d3b03b7c862b25be453f705da739..ff4a024d691b5980d9fbbcc51d8380dd1c368657 100644
+--- a/src/main/java/org/bukkit/event/world/WorldEvent.java
++++ b/src/main/java/org/bukkit/event/world/WorldEvent.java
+@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
+ /**
+  * Represents events within a world
+  */
+-public abstract class WorldEvent extends Event {
++public abstract class WorldEvent extends Event implements org.bukkit.event.IWorldEvent { // Paper - per world events
+     private final World world;
+ 
+     public WorldEvent(@NotNull final World world) {
+diff --git a/src/main/java/org/bukkit/plugin/PluginLoader.java b/src/main/java/org/bukkit/plugin/PluginLoader.java
+index 6ab9cd8213cbe35943748dcf42948d5fc048c84c..a90993801ac312ffa797f8bc56ee0418afc28d94 100644
+--- a/src/main/java/org/bukkit/plugin/PluginLoader.java
++++ b/src/main/java/org/bukkit/plugin/PluginLoader.java
+@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
+ import org.bukkit.event.Event;
+ import org.bukkit.event.Listener;
+ import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
+ 
+ /**
+  * Represents a plugin loader, which handles direct access to specific types
+@@ -59,6 +60,19 @@ public interface PluginLoader {
+     @NotNull
+     public Map<Class<? extends Event>, Set<RegisteredListener>> createRegisteredListeners(@NotNull Listener listener, @NotNull Plugin plugin);
+ 
++    // Paper start
++    /**
++     * Creates and returns registered listeners for the event classes used in
++     * this listener
++     *
++     * @param listener The object that will handle the eventual call back
++     * @param plugin The plugin to use when creating registered listeners
++     * @return The registered listeners.
++     */
++    @NotNull
++    public Map<Class<? extends Event>, Set<RegisteredListener>> createRegisteredListeners(@NotNull Listener listener, @NotNull Plugin plugin, @Nullable org.bukkit.World world);
++    // Paper end
++
+     /**
+      * Enables the specified plugin
+      * <p>
+diff --git a/src/main/java/org/bukkit/plugin/PluginManager.java b/src/main/java/org/bukkit/plugin/PluginManager.java
+index 86cc5025ad98f7a752c51713b7cd6a39d5136ecc..e02368aef08404136f23dd2e9aa4edfb1d74290e 100644
+--- a/src/main/java/org/bukkit/plugin/PluginManager.java
++++ b/src/main/java/org/bukkit/plugin/PluginManager.java
+@@ -142,6 +142,30 @@ public interface PluginManager {
+      */
+     public void registerEvent(@NotNull Class<? extends Event> event, @NotNull Listener listener, @NotNull EventPriority priority, @NotNull EventExecutor executor, @NotNull Plugin plugin, boolean ignoreCancelled);
+ 
++    // Paper start
++    /**
++     * Registers all the events in the given listener class
++     *
++     * @param listener Listener to register
++     * @param plugin Plugin to register
++     * @param world World to listen against
++     */
++    public void registerEvents(@NotNull Listener listener, @NotNull Plugin plugin, @Nullable org.bukkit.World world);
++
++    /**
++     * Registers the specified executor to the given event class
++     *
++     * @param event Event type to register
++     * @param listener Listener to register
++     * @param priority Priority to register this event at
++     * @param executor EventExecutor to register
++     * @param plugin Plugin to register
++     * @param ignoreCancelled Whether to pass cancelled events or not
++     * @param world World to listen against
++     */
++    public void registerEvent(@NotNull Class<? extends Event> event, @NotNull Listener listener, @NotNull EventPriority priority, @NotNull EventExecutor executor, @NotNull Plugin plugin, boolean ignoreCancelled, @Nullable org.bukkit.World world);
++    // Paper end
++
+     /**
+      * Enables the specified plugin
+      * <p>
+diff --git a/src/main/java/org/bukkit/plugin/RegisteredListener.java b/src/main/java/org/bukkit/plugin/RegisteredListener.java
+index 419aec56b0e3fa8bcec2ea7f340caa3456b57d00..30bebe822d1404632824983ebfe82a7b5ae6a1a7 100644
+--- a/src/main/java/org/bukkit/plugin/RegisteredListener.java
++++ b/src/main/java/org/bukkit/plugin/RegisteredListener.java
+@@ -16,14 +16,23 @@ public class RegisteredListener {
+     private final Plugin plugin;
+     private final EventExecutor executor;
+     private final boolean ignoreCancelled;
++    private final java.util.UUID world;
+ 
++    @Deprecated // Paper
+     public RegisteredListener(@NotNull final Listener listener, @NotNull final EventExecutor executor, @NotNull final EventPriority priority, @NotNull final Plugin plugin, final boolean ignoreCancelled) {
++        // Paper start
++        this(listener, executor, priority, plugin, ignoreCancelled, null);
++    }
++
++    public RegisteredListener(@NotNull final Listener listener, @NotNull final EventExecutor executor, @NotNull final EventPriority priority, @NotNull final Plugin plugin, final boolean ignoreCancelled, java.util.UUID world) {
+         this.listener = listener;
+         this.priority = priority;
+         this.plugin = plugin;
+         this.executor = executor;
+         this.ignoreCancelled = ignoreCancelled;
++        this.world = world;
+     }
++    // Paper end
+ 
+     /**
+      * Gets the listener for this registration
+@@ -67,6 +76,13 @@ public class RegisteredListener {
+                 return;
+             }
+         }
++        // Paper start
++        if (event instanceof org.bukkit.event.IWorldEvent && world != null) {
++            if (!world.equals(((org.bukkit.event.IWorldEvent) event).getWorld().getUID())) {
++                return;
++            }
++        }
++        // Paper end
+         executor.execute(listener, event);
+     }
+ 
+diff --git a/src/main/java/org/bukkit/plugin/SimplePluginManager.java b/src/main/java/org/bukkit/plugin/SimplePluginManager.java
+index d1c35e4cf778070f8d18bbe0af8d423334c6dfbf..e699d296e42dc12e6811e89b59c5b6f088251763 100644
+--- a/src/main/java/org/bukkit/plugin/SimplePluginManager.java
++++ b/src/main/java/org/bukkit/plugin/SimplePluginManager.java
+@@ -649,11 +649,18 @@ public final class SimplePluginManager implements PluginManager {
+ 
+     @Override
+     public void registerEvents(@NotNull Listener listener, @NotNull Plugin plugin) {
++        // Paper start
++        registerEvents(listener, plugin, null);
++    }
++
++    @Override
++    public void registerEvents(@NotNull Listener listener, @NotNull Plugin plugin, @Nullable World world) {
++        // Paper end
+         if (!plugin.isEnabled()) {
+             throw new IllegalPluginAccessException("Plugin attempted to register " + listener + " while not enabled");
+         }
+ 
+-        for (Map.Entry<Class<? extends Event>, Set<RegisteredListener>> entry : plugin.getPluginLoader().createRegisteredListeners(listener, plugin).entrySet()) {
++        for (Map.Entry<Class<? extends Event>, Set<RegisteredListener>> entry : plugin.getPluginLoader().createRegisteredListeners(listener, plugin, world).entrySet()) { // Paper - per world events
+             getEventListeners(getRegistrationClass(entry.getKey())).registerAll(entry.getValue());
+         }
+ 
+@@ -678,6 +685,26 @@ public final class SimplePluginManager implements PluginManager {
+      */
+     @Override
+     public void registerEvent(@NotNull Class<? extends Event> event, @NotNull Listener listener, @NotNull EventPriority priority, @NotNull EventExecutor executor, @NotNull Plugin plugin, boolean ignoreCancelled) {
++        // Paper start
++        registerEvent(event, listener, priority, executor, plugin, ignoreCancelled, null);
++    }
++
++    /**
++     * Registers the given event to the specified listener using a directly
++     * passed EventExecutor
++     *
++     * @param event Event class to register
++     * @param listener PlayerListener to register
++     * @param priority Priority of this event
++     * @param executor EventExecutor to register
++     * @param plugin Plugin to register
++     * @param ignoreCancelled Do not call executor if event was already
++     *     cancelled
++     * @param world World to register the listener for
++     */
++    @Override
++    public void registerEvent(@NotNull Class<? extends Event> event, @NotNull Listener listener, @NotNull EventPriority priority, @NotNull EventExecutor executor, @NotNull Plugin plugin, boolean ignoreCancelled, @Nullable World world) {
++        // Paper end
+         Validate.notNull(listener, "Listener cannot be null");
+         Validate.notNull(priority, "Priority cannot be null");
+         Validate.notNull(executor, "Executor cannot be null");
+@@ -691,7 +718,7 @@ public final class SimplePluginManager implements PluginManager {
+         if (false) { // Spigot - RL handles useTimings check now // Paper
+             getEventListeners(event).register(new TimedRegisteredListener(listener, executor, priority, plugin, ignoreCancelled));
+         } else {
+-            getEventListeners(event).register(new RegisteredListener(listener, executor, priority, plugin, ignoreCancelled));
++            getEventListeners(event).register(new RegisteredListener(listener, executor, priority, plugin, ignoreCancelled, world != null ? world.getUID(): null)); // Paper - per world events
+         }
+     }
+ 
+diff --git a/src/main/java/org/bukkit/plugin/java/JavaPluginLoader.java b/src/main/java/org/bukkit/plugin/java/JavaPluginLoader.java
+index b622cedeeee017f042bcf92485d81832030a8030..88c0541e8111e0520f1165191a4399022c08afcd 100644
+--- a/src/main/java/org/bukkit/plugin/java/JavaPluginLoader.java
++++ b/src/main/java/org/bukkit/plugin/java/JavaPluginLoader.java
+@@ -269,6 +269,12 @@ public final class JavaPluginLoader implements PluginLoader {
+     @Override
+     @NotNull
+     public Map<Class<? extends Event>, Set<RegisteredListener>> createRegisteredListeners(@NotNull Listener listener, @NotNull final Plugin plugin) {
++        // Paper start
++        return createRegisteredListeners(listener, plugin, null);
++    }
++
++    public Map<Class<? extends Event>, Set<RegisteredListener>> createRegisteredListeners(@NotNull Listener listener, @NotNull final Plugin plugin, @Nullable org.bukkit.World world) {
++        // Paper end
+         Validate.notNull(plugin, "Plugin can not be null");
+         Validate.notNull(listener, "Listener can not be null");
+ 
+@@ -337,7 +343,7 @@ public final class JavaPluginLoader implements PluginLoader {
+             if (false) { // Spigot - RL handles useTimings check now
+                 eventSet.add(new TimedRegisteredListener(listener, executor, eh.priority(), plugin, eh.ignoreCancelled()));
+             } else {
+-                eventSet.add(new RegisteredListener(listener, executor, eh.priority(), plugin, eh.ignoreCancelled()));
++                eventSet.add(new RegisteredListener(listener, executor, eh.priority(), plugin, eh.ignoreCancelled(), world != null ? world.getUID() : null));
+             }
+         }
+         return ret;
