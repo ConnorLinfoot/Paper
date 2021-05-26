@@ -432,7 +432,7 @@ index d1c35e4cf778070f8d18bbe0af8d423334c6dfbf..e699d296e42dc12e6811e89b59c5b6f0
      }
  
 diff --git a/src/main/java/org/bukkit/plugin/java/JavaPluginLoader.java b/src/main/java/org/bukkit/plugin/java/JavaPluginLoader.java
-index b622cedeeee017f042bcf92485d81832030a8030..88c0541e8111e0520f1165191a4399022c08afcd 100644
+index b622cedeeee017f042bcf92485d81832030a8030..7268dec737f785c536538c8d40087a554687dd9f 100644
 --- a/src/main/java/org/bukkit/plugin/java/JavaPluginLoader.java
 +++ b/src/main/java/org/bukkit/plugin/java/JavaPluginLoader.java
 @@ -269,6 +269,12 @@ public final class JavaPluginLoader implements PluginLoader {
@@ -453,7 +453,7 @@ index b622cedeeee017f042bcf92485d81832030a8030..88c0541e8111e0520f1165191a439902
                  eventSet.add(new TimedRegisteredListener(listener, executor, eh.priority(), plugin, eh.ignoreCancelled()));
              } else {
 -                eventSet.add(new RegisteredListener(listener, executor, eh.priority(), plugin, eh.ignoreCancelled()));
-+                eventSet.add(new RegisteredListener(listener, executor, eh.priority(), plugin, eh.ignoreCancelled(), world != null ? world.getUID() : null));
++                eventSet.add(new RegisteredListener(listener, executor, eh.priority(), plugin, eh.ignoreCancelled(), world != null ? world.getUID() : null)); // Paper - per world events
              }
          }
          return ret;
